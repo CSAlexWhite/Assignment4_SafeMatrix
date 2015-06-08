@@ -38,7 +38,8 @@ public:
 		int size = s.high - s.low + 1;
 		array = new T[size];
 
-		for (int i = 0; i < size; i++) array[i] = s.array[i];
+		for (int i = 0; i < size; i++) 
+			array[i] = s.array[i];
 
 		low = s.low;
 		high = s.high;
@@ -51,15 +52,15 @@ public:
 	}
 
 	/* Overloaded [] */
-	T& operator[] (int i){
+	T& operator[] (int index){
 
-		if (i<low || i>high){
+		if ( index < low || index > high ){
 
 			cout << "Index " << i << " out of range." << endl;
 			exit(1);
 		}
 
-		return array[i - low];
+		return array[index - low];
 	}
 
 	/* Overloaded Assignment */
@@ -71,7 +72,8 @@ public:
 		int size = s.high - s.low + 1;
 		array = new T[size];
 
-		for (int i = 0; i < size; i++) array[i] = s.array[i];
+		for (int i = 0; i < size; i++) 
+			array[i] = s.array[i];
 
 		low = s.low;
 		high = s.high;
@@ -86,7 +88,8 @@ template <class T>
 ostream& operator<< (ostream& os, SafeArray<T> s){
 
 	int size = s.high - s.low + 1;
-	for (int i = 0; i < size; i++) cout << s.array[i] << endl;
+	for (int i = 0; i < size; i++) 
+		cout << s.array[i] << endl;
 	return os;
 }
 
@@ -95,8 +98,8 @@ class SafeMatrix {
 
 private:
 
-	int row_low, row_high, col_low, col_high;
-	SafeArray<T>** matrix;
+	int rows, cols, row_low, row_high, col_low, col_high;
+	SafeArray<T>* matrix;
 
 public:
 
@@ -105,6 +108,8 @@ public:
 		row_high{ -1 },
 		col_low{ 0 },
 		col_high{ -1 },
+		rows{ 0 },
+		cols{ 0 },
 		matrix{ nullptr }
 	{}
 
@@ -112,10 +117,13 @@ public:
 		row_low{ 0 },
 		row_high{ size - 1 },
 		col_low{ 0 },
-		col_high{ size - 1 }
+		col_high{ size - 1 },
+		rows{ size },
+		cols{ size },
+		matrix{ new SafeArray<T>[size] }
 	{
-		matrix = new SafeArray<T>*[size];
-		//for (int i = 0; i < size; i++) matrix[i] = SafeArray<T>(size);
+		for (int i = 0; i < size; i++) 
+			matrix[i] = SafeArray<T>(size);
 	}
 
 	SafeMatrix(int row, int col) :
@@ -123,11 +131,16 @@ public:
 		row_high{ row - 1 },
 		col_low{ 0 },
 		col_high{ col - 1 },
-		matrix{ new T[row][col] },
-		{}
+		rows{ row },
+		cols{ col },
+		matrix{ new SafeArray<T>[row] }
+	{
+		for (int i = 0; i < size; i++) 
+			matrix[i] = SafeArray<T>(col);
+	}
 
-		SafeMatrix(int row_low, int row_high, int col_low, int col_high){
-
+	SafeMatrix(int row_low, int row_high, int col_low, int col_high)
+	{
 		if (row_high < row_low
 			|| col_high < col_low) {
 
@@ -139,12 +152,79 @@ public:
 		row_high{ row_high - 1 };
 		col_low{ col_low };
 		col_high{ col_high - 1 };
-		matrix{ new T[row_low - row_high][col_low - col_high] };
+		rows{ row_high - row_low };
+		cols{ col_high - col_low };
+		matrix{ new SafeArray<T>[rows] };
+
+		for (int i = 0; i < rows; i++) 
+			matrix[i] = SafeArray<T>(cols)
 	}
 
-	SafeArray<T>* operator[] (int index){
+	SafeMatrix(const SafeMatrix &s) :
+		row_low{ s.row_low },
+		row_high{ s.row_high },
+		col_low{ s.col_low },
+		col_high{ s.col_high },
+		rows{ s.rows },
+		cols{ s.cols },
+		matrix{ new SafeArray<T>[rows] }
+	{
+		for (int i = 0; i < rows; i++)
+			matrix[i] = SafeArray<T>(cols);
 
-		return (SafeArray<T>*)(matrix[index]);
+		for (int i = 0; i < rows; i++){
+			for (int j = 0; j < cols; j++)
+				matrix[i][j] = s.matrix[i][j];
+		}
+	}
+
+	SafeArray<T>& operator[] (int index){
+
+		if ( index < row_low || index > row_high ){
+
+			cout << "Index " << i << " out of range." << endl;
+			exit(1);
+		}
+
+		return matrix[index - row_low];
+	}
+
+	SafeMatrix<T>& operator= (const SafeMatrix<T> s){
+
+		if (this == &s) return *this;
+
+		delete[] matrix;
+		matrix = new SafeArray<t>[s.rows];
+
+		for (int i = 0; i < s.rows); i++)
+			matrix[i] = SafeArray<T>(s.cols);
+
+		for (int i = 0; i < s.rows; i++){
+			for (int j = 0; j < s.cols; j++)
+				matrix[i][j] = s.matrix[i][j];
+		}
+
+		rows = s.rows;
+		cols = s.cols;
+		row_low = s.row_low;
+		row_high = s.row_high;
+		col_low = s.col_low;
+		col_high = s.col_high;
+
+		return *this;
+	}
+
+	SafeMatrix<T> operator* (const SafeMatrix<T> s){
+
+		if (cols != s.rows){
+
+			cout << "Incompatible Matrix Dimensions: " << cols << " != " << s.rows << endl;
+			return NULL;
+		}
+
+		SafeMatrix<T> output(rows, s.cols);
+
+
 	}
 };
 
